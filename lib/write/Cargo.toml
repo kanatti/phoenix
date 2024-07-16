@@ -4,3 +4,9 @@ edition = "2021"
 version.workspace = true
 
 [dependencies]
+tokio.workspace = true
+axum.workspace = true
+parquet.workspace = true
+arrow.workspace = true
+serde.workspace = true
+async-trait.workspace = true
