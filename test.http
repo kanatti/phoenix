@@ -1,0 +1,49 @@
+@hostname = http://localhost
+@query_port = 3000
+@write_port = 3001
+@contentType = application/json
+
+###
+
+GET {{hostname}}:{{query_port}}/status
+
+
+### 
+
+POST {{hostname}}:{{query_port}}/query
+Content-Type: {{contentType}}
+
+{
+    "query": "SELECT * FROM table1;"
+}
+
+### 
+
+POST {{hostname}}:{{write_port}}/write
+Content-Type: {{contentType}}
+
+{
+    "data": [
+        {
+            "uid": 123,
+            "clicks": 10,
+            "impressions": 20
+        },
+        {
+            "uid": 124,
+            "clicks": 33,
+            "impressions": 23
+        },
+        {
+            "uid": 125,
+            "clicks": 12,
+            "impressions": 55
+        },
+        {
+            "uid": 126,
+            "clicks": 0,
+            "impressions": 6
+        }
+    ],
+    "path": "test.parquet"
+}

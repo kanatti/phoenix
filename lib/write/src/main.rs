@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{
     extract::{Json, State},
     http::StatusCode,
@@ -7,6 +5,8 @@ use axum::{
     Router,
 };
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+use std::sync::Arc;
 
 mod store;
 mod util;
@@ -15,7 +15,7 @@ use store::{LocalStore, RemoteStore, Store};
 
 #[derive(Deserialize)]
 struct WriteRequest {
-    data: Vec<u8>, // Serialized Arrow RecordBatch
+    data: Vec<Value>,
     path: String,
 }
 
@@ -32,22 +32,37 @@ struct AppState {
 async fn write_handler(
     State(state): State<AppState>,
     Json(req): Json<WriteRequest>,
-) -> Result<Json<WriteResponse>, StatusCode> {
-    let data = util::read_record_batch_from_vec(req.data).map_err(|_| StatusCode::BAD_REQUEST)?;
+) -> (StatusCode, Json<WriteResponse>) {
+    let data = util::read_record_batch_from_json(&req.data);
+
+    if let Err(e) = data {
+        let response = Json(WriteResponse {
+            status: format!("error: {}", e),
+        });
+        return (StatusCode::BAD_REQUEST, response);
+    }
 
     let store = state.store;
-    store
-        .write(data, &req.path)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
-    store
-        .notify_catalog(&req.path)
-        .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    if let Err(e) = store.write(data.unwrap(), &req.path).await {
+        let response = Json(WriteResponse {
+            status: format!("error: {}", e),
+        });
+        return (StatusCode::INTERNAL_SERVER_ERROR, response);
+    }
 
-    Ok(Json(WriteResponse {
-        status: "success".to_string(),
-    }))
+    if let Err(e) = store.notify_catalog(&req.path).await {
+        let response = Json(WriteResponse {
+            status: format!("error: {}", e),
+        });
+        return (StatusCode::INTERNAL_SERVER_ERROR, response);
+    }
+
+    (
+        StatusCode::OK,
+        Json(WriteResponse {
+            status: "ok".to_string(),
+        }),
+    )
 }
 
 #[tokio::main]
@@ -63,7 +78,6 @@ async fn main() {
     let store = Arc::new(store);
 
     let app_state = AppState { store };
-
 
     let app = Router::new()
         .route("/write", post(write_handler))
