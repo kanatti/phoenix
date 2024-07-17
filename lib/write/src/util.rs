@@ -39,7 +39,7 @@ pub fn read_record_batch_from_json(
             .iter()
             .map(|obj| {
                 obj.get(field.name())
-                    .and_then(|v| v.as_str().map(String::from))
+                    .and_then(|v| Some(v.to_string()))
             })
             .collect();
         columns.push(Arc::new(StringArray::from(column)) as ArrayRef);
