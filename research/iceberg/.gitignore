@@ -1,4 +1,5 @@
 /catalog
 /minio-data
+/minio-raw
 /warehouse
 /notebooks
