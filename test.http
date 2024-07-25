@@ -1,25 +1,83 @@
-@hostname = http://localhost
-@query_port = 3000
-@write_port = 3001
+@query_server = http://localhost:3000
+@write_server = http://localhost:3001
+@catalog_server = http://localhost:3002
 @contentType = application/json
 
-###
+###  -------- QUERY ---------
 
-GET {{hostname}}:{{query_port}}/status
+### Check Status
+
+GET {query_server}/status
 
 
-### 
+### Run a simple query
 
-POST {{hostname}}:{{query_port}}/query
+POST {query_server}/query
 Content-Type: {{contentType}}
 
 {
     "query": "SELECT * FROM table1;"
 }
 
-### 
+###  -------- CATALOG  ---------
 
-POST {{hostname}}:{{write_port}}/write
+### Create a Table with Schema
+
+POST {{catalog_server}}/tables
+Content-Type: {{contentType}}
+
+{
+    "name": "traffic",
+    "schema": {
+        "fields": [
+            {
+                "field": "user_id",
+                "type": "UUID"
+            },
+            {
+                "field": "device_type",
+                "type": "ENUM"
+            },
+            {
+                "field": "impressions",
+                "type": "UINT_16"
+            },
+            {
+                "field": "timestamp",
+                "type": "TIMESTAMP_MILLIS"
+            }
+        ]
+    }
+}
+
+### List Tables
+
+GET {{catalog_server}}/tables
+
+### Get Table schema
+
+GET {{catalog_server}}/tables/table1
+
+
+### Load or Unload segments
+
+POST {{catalog_server}}/segments
+Content-Type: {{contentType}}
+
+{
+    "load": [
+
+    ],
+    "unload": [
+
+    ]
+}
+
+
+
+###  -------- WRITE  ---------
+
+POST {write_server}/write
 Content-Type: {{contentType}}
 
 {
