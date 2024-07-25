@@ -1,11 +1,5 @@
 [workspace]
-members = [
-    "lib/query",
-    "lib/data",
-    "lib/write",
-    "lib/catalog",
-    "phoenix",
-]
+members = [ "crates/*" ]
 
 resolver = "2"
 
