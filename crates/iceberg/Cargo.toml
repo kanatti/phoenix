@@ -4,3 +4,5 @@ edition = "2021"
 version.workspace = true
 
 [dependencies]
+serde_json.workspace = true
+thiserror.workspace = true
