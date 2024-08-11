@@ -48,6 +48,8 @@ pub fn from_json_value(value: &Value) -> Result<TableMetadata, ParserError> {
 
 #[cfg(test)]
 mod tests {
+    use crate::schema::NestedField;
+
     use super::*;
 
     #[test]
@@ -57,7 +59,14 @@ mod tests {
             "location": "s3://test-location/metadata.json",
             "last-column-id": 100,
             "last-updated-ms": 1723320520000,
-            "current-snapshot-id": 1
+            "current-snapshot-id": 1,
+            "schema": {
+                "fields": [
+                    {"id": 1, "name": "id", "type": "integer", "required": false},
+                    {"id": 2, "name": "name", "type": "string", "required": true},
+                    {"id": 3, "name": "age", "type": "integer", "required": true}
+                ]
+            }
         }"#;
 
         let result = from_json(json);
@@ -67,6 +76,26 @@ mod tests {
         assert_eq!(metadata.last_column_id, 100);
         assert_eq!(metadata.current_snapshot_id, 1);
         assert_eq!(metadata.last_updated_millis, 1723320520000);
+        assert_eq!(metadata.schema.fields.len(), 3);
+
+        assert_eq!(metadata.schema.fields[0], NestedField {
+            id: 1,
+            name: "id".to_string(),
+            field_type: "integer".to_string(),
+            required: false
+        });
+        assert_eq!(metadata.schema.fields[1], NestedField {
+            id: 2,
+            name: "name".to_string(),
+            field_type: "string".to_string(),
+            required: true
+        });
+        assert_eq!(metadata.schema.fields[2], NestedField {
+            id: 3,
+            name: "age".to_string(),
+            field_type: "integer".to_string(),
+            required: true
+        });
     }
 
     #[test]

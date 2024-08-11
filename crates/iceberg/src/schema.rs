@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct NestedField {
     pub id: u32,
     pub name: String,
