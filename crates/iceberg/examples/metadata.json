@@ -33,5 +33,9 @@
             "transform": "bucket",
             "name": "id_bucket"
         }
-    ]
+    ],
+    "properties": {
+        "property1": "value1",
+        "property2": "value2"
+    }
 }

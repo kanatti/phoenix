@@ -1,4 +1,6 @@
-use serde_json::Value;
+use std::collections::HashMap;
+
+use serde_json::{value, Value};
 
 use crate::{metadata::TableMetadata, partition::PartitionSpec, schema::Schema};
 
@@ -42,6 +44,7 @@ pub fn from_json_value(value: &Value) -> Result<TableMetadata, ParserError> {
         last_updated_millis,
         schema: get_schema(value)?,
         partition_spec: get_partition_spec(value)?,
+        properties: get_properties(value)?,
     })
 }
 
@@ -59,6 +62,25 @@ fn get_partition_spec(value: &Value) -> Result<PartitionSpec, ParserError> {
         .ok_or_else(|| ParserError::MissingRequiredField(PARTITION_SPEC.to_owned()))?;
 
     partition_spec::from_json_value(&value)
+}
+
+fn get_properties(value: &Value) -> Result<HashMap<String, String>, ParserError> {
+    let value = value
+        .get(PROPERTIES)
+        .ok_or_else(|| ParserError::MissingRequiredField(PROPERTIES.to_owned()))?;
+
+    let value = value.as_object().unwrap();
+
+    let mut properties = HashMap::with_capacity(value.len());
+
+    for (property, property_value) in value.iter() {
+        let property_value = property_value
+            .as_str()
+            .ok_or_else(|| ParserError::InvalidFieldType(property.clone()))?;
+        properties.insert(property.clone(), property_value.to_owned());
+    }
+
+    Ok(properties)
 }
 
 #[cfg(test)]
@@ -88,7 +110,11 @@ mod tests {
                     "transform": "bucket",
                     "name": "id_bucket"
                 }
-            ]
+            ],
+            "properties": {
+                "property1": "value1",
+                "property2": "value2"
+            }
         }"#;
 
         let result = from_json(json);
