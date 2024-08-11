@@ -1,6 +1,6 @@
-mod field;
-mod spec;
-mod transform;
+pub mod field;
+pub mod spec;
+pub mod transform;
 
 pub use field::PartitionField;
 pub use spec::{PartitionSpec, PartitionSpecRef};

@@ -1,8 +1,8 @@
 use serde_json::Value;
 
-use crate::metadata::TableMetadata;
+use crate::{metadata::TableMetadata, partition::PartitionSpec, schema::Schema};
 
-use super::{schema, util, ParserError};
+use super::{partition_spec, schema, util, ParserError};
 
 static TABLE_FORMAT_VERSION: u32 = 1;
 
@@ -30,8 +30,6 @@ pub fn from_json_value(value: &Value) -> Result<TableMetadata, ParserError> {
 
     let location = util::get_string!(&value, LOCATION)?;
     let last_column_id = util::get_u32!(&value, LAST_COLUMN_ID)?;
-    let schema = schema::from_json_value(&value[SCHEMA])?;
-    // Parse PARTITION_SPEC
     // Parse PROPERTIES
     let current_snapshot_id = util::get_u32!(&value, CURRENT_SNAPSHOT_ID)?;
     let last_updated_millis = util::get_u64!(&value, LAST_UPDATED_MILLIS)?;
@@ -42,8 +40,25 @@ pub fn from_json_value(value: &Value) -> Result<TableMetadata, ParserError> {
         last_column_id,
         current_snapshot_id,
         last_updated_millis,
-        schema
+        schema: get_schema(value)?,
+        partition_spec: get_partition_spec(value)?,
     })
+}
+
+fn get_schema(value: &Value) -> Result<Schema, ParserError> {
+    let value = value
+        .get(SCHEMA)
+        .ok_or_else(|| ParserError::MissingRequiredField(SCHEMA.to_owned()))?;
+
+    schema::from_json_value(&value)
+}
+
+fn get_partition_spec(value: &Value) -> Result<PartitionSpec, ParserError> {
+    let value = value
+        .get(PARTITION_SPEC)
+        .ok_or_else(|| ParserError::MissingRequiredField(PARTITION_SPEC.to_owned()))?;
+
+    partition_spec::from_json_value(&value)
 }
 
 #[cfg(test)]
@@ -66,36 +81,54 @@ mod tests {
                     {"id": 2, "name": "name", "type": "string", "required": true},
                     {"id": 3, "name": "age", "type": "integer", "required": true}
                 ]
-            }
+            },
+            "partition-spec": [
+                {
+                    "source-id": 1,
+                    "transform": "bucket",
+                    "name": "id_bucket"
+                }
+            ]
         }"#;
 
         let result = from_json(json);
         assert!(result.is_ok(), "Result is not Ok, Error - {:?}", result);
+
         let metadata = result.unwrap();
         assert_eq!(metadata.location, "s3://test-location/metadata.json");
         assert_eq!(metadata.last_column_id, 100);
         assert_eq!(metadata.current_snapshot_id, 1);
         assert_eq!(metadata.last_updated_millis, 1723320520000);
+
         assert_eq!(metadata.schema.fields.len(), 3);
 
-        assert_eq!(metadata.schema.fields[0], NestedField {
-            id: 1,
-            name: "id".to_string(),
-            field_type: "integer".to_string(),
-            required: false
-        });
-        assert_eq!(metadata.schema.fields[1], NestedField {
-            id: 2,
-            name: "name".to_string(),
-            field_type: "string".to_string(),
-            required: true
-        });
-        assert_eq!(metadata.schema.fields[2], NestedField {
-            id: 3,
-            name: "age".to_string(),
-            field_type: "integer".to_string(),
-            required: true
-        });
+        assert_eq!(
+            metadata.schema.fields[0],
+            NestedField {
+                id: 1,
+                name: "id".to_string(),
+                field_type: "integer".to_string(),
+                required: false
+            }
+        );
+        assert_eq!(
+            metadata.schema.fields[1],
+            NestedField {
+                id: 2,
+                name: "name".to_string(),
+                field_type: "string".to_string(),
+                required: true
+            }
+        );
+        assert_eq!(
+            metadata.schema.fields[2],
+            NestedField {
+                id: 3,
+                name: "age".to_string(),
+                field_type: "integer".to_string(),
+                required: true
+            }
+        );
     }
 
     #[test]

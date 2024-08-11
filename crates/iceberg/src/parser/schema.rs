@@ -13,7 +13,6 @@ static NAME: &'static str = "name";
 static ID: &'static str = "id";
 static REQUIRED: &'static str = "required";
 
-
 pub fn from_json(json: &str) -> Result<Schema, ParserError> {
     let value: Value = serde_json::from_str(json)?;
     from_json_value(&value)
@@ -26,8 +25,7 @@ pub fn from_json_value(value: &Value) -> Result<Schema, ParserError> {
 
     if !fields.is_array() {
         return Err(ParserError::InvalidFieldType(
-            "schema.fields".to_owned(),
-            "array".to_owned(),
+            "schema.fields must be array".to_owned(),
         ));
     }
 
@@ -36,8 +34,7 @@ pub fn from_json_value(value: &Value) -> Result<Schema, ParserError> {
 
     for field in fields {
         nested_fields.push(as_field(field)?);
-    }   
-
+    }
 
     Ok(Schema::new(nested_fields))
 }
@@ -52,6 +49,6 @@ fn as_field(value: &Value) -> Result<NestedField, ParserError> {
         id,
         name,
         field_type,
-        required
+        required,
     })
 }

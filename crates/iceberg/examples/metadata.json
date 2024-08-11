@@ -26,5 +26,12 @@
                 "required": false
             }
         ]
-    }
+    },
+    "partition-spec": [
+        {
+            "source-id": 1,
+            "transform": "bucket",
+            "name": "id_bucket"
+        }
+    ]
 }

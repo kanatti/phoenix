@@ -1,13 +1,14 @@
 use super::Transform;
 
-pub struct PartitionField<T, S> {
+#[derive(Debug)]
+pub struct PartitionField {
     pub source_id: u32,
     pub name: String,
-    pub transform: Box<dyn Transform<T, S>>,
+    pub transform: Box<dyn Transform>,
 }
 
-impl<T, S> PartitionField<T, S> {
-    pub fn new(source_id: u32, name: String, transform: Box<dyn Transform<T, S>>) -> Self {
+impl PartitionField {
+    pub fn new(source_id: u32, name: String, transform: Box<dyn Transform>) -> Self {
         Self {
             source_id,
             name,
