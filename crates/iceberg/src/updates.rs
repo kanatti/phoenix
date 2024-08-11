@@ -1,8 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
 use crate::{
+    schema::Schema,
     snapshot::{DataFile, SnapshotRef},
-    table::{Schema, TableMetadata, TableOperations},
+    table::{TableMetadata, TableOperations},
 };
 
 pub enum UpdateError {}

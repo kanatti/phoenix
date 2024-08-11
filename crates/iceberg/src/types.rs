@@ -15,7 +15,7 @@ pub enum FieldType {
     Decimal,
     Struct,
     List,
-    Map
+    Map,
 }
 
 pub type Boolean = bool;

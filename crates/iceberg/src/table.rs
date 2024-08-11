@@ -4,6 +4,7 @@ use crate::{
     partition::{PartitionSpec, PartitionSpecRef},
     rollback::Rollback,
     scan::TableScan,
+    schema::{Schema, SchemaRef},
     snapshot::{ExpireSnapshots, SnapshotRef},
     updates::{RewriteFiles, UpdateProperties, UpdateSchema},
 };
@@ -98,10 +99,6 @@ impl Table {
 }
 
 pub type TableRef = Rc<Table>;
-
-pub struct Schema {}
-
-pub type SchemaRef = Rc<Schema>;
 
 pub trait Expression {}
 

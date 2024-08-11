@@ -13,5 +13,4 @@ pub type SnapshotRef = Rc<dyn Snapshot>;
 
 pub struct ExpireSnapshots {}
 
-
 pub struct DataFile {}

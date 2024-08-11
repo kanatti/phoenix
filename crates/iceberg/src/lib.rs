@@ -1,8 +1,10 @@
-pub mod updates;
-pub mod table;
-pub mod scan;
-pub mod partition;
-pub mod snapshot;
-pub mod rollback;
-pub mod types;
 pub mod metadata;
+pub mod parser;
+pub mod partition;
+pub mod rollback;
+pub mod scan;
+pub mod schema;
+pub mod snapshot;
+pub mod table;
+pub mod types;
+pub mod updates;

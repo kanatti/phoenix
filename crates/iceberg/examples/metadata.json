@@ -1,3 +1,30 @@
 {
-    "format-version": 1
+    "format-version": 1,
+    "location": "s3://test-location/metadata.json",
+    "last-column-id": 100,
+    "last-updated-ms": 1723320520000,
+    "current-snapshot-id": 1,
+    "schema": {
+        "type": "struct",
+        "fields": [
+            {
+                "id": 1,
+                "name": "id",
+                "type": "long",
+                "required": true
+            },
+            {
+                "id": 2,
+                "name": "name",
+                "type": "string",
+                "required": true
+            },
+            {
+                "id": 3,
+                "name": "email_id",
+                "type": "string",
+                "required": false
+            }
+        ]
+    }
 }
