@@ -3,6 +3,7 @@ use thiserror::Error;
 pub mod metadata;
 pub mod schema;
 pub mod partition_spec;
+pub mod snapshot;
 mod util;
 
 #[derive(Error, Debug)]

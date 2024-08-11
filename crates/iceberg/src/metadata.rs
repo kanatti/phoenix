@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{partition::PartitionSpec, schema::Schema};
+use crate::{partition::PartitionSpec, schema::Schema, snapshot::Snapshot};
 
 #[derive(Debug)]
 pub struct TableMetadata {
@@ -10,5 +10,6 @@ pub struct TableMetadata {
     pub current_snapshot_id: u32,
     pub schema: Schema,
     pub partition_spec: PartitionSpec,
-    pub properties: HashMap<String, String>
+    pub properties: HashMap<String, String>,
+    pub snapshots: Vec<Snapshot>
 }

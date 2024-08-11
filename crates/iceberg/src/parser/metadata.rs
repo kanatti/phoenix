@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
-use serde_json::{value, Value};
+use serde_json::Value;
 
-use crate::{metadata::TableMetadata, partition::PartitionSpec, schema::Schema};
+use crate::{
+    metadata::TableMetadata, partition::PartitionSpec, schema::Schema, snapshot::Snapshot,
+};
 
-use super::{partition_spec, schema, util, ParserError};
+use super::{partition_spec, schema, snapshot, util, ParserError};
 
 static TABLE_FORMAT_VERSION: u32 = 1;
 
@@ -32,10 +34,8 @@ pub fn from_json_value(value: &Value) -> Result<TableMetadata, ParserError> {
 
     let location = util::get_string!(&value, LOCATION)?;
     let last_column_id = util::get_u32!(&value, LAST_COLUMN_ID)?;
-    // Parse PROPERTIES
     let current_snapshot_id = util::get_u32!(&value, CURRENT_SNAPSHOT_ID)?;
     let last_updated_millis = util::get_u64!(&value, LAST_UPDATED_MILLIS)?;
-    // Parse SNAPSHOTS
 
     Ok(TableMetadata {
         location,
@@ -45,6 +45,7 @@ pub fn from_json_value(value: &Value) -> Result<TableMetadata, ParserError> {
         schema: get_schema(value)?,
         partition_spec: get_partition_spec(value)?,
         properties: get_properties(value)?,
+        snapshots: get_snapshots(value)?,
     })
 }
 
@@ -83,6 +84,23 @@ fn get_properties(value: &Value) -> Result<HashMap<String, String>, ParserError>
     Ok(properties)
 }
 
+fn get_snapshots(value: &Value) -> Result<Vec<Snapshot>, ParserError> {
+    let value = value
+        .get(SNAPSHOTS)
+        .ok_or_else(|| ParserError::MissingRequiredField(SNAPSHOTS.to_owned()))?;
+
+    let value = value.as_array().unwrap();
+
+    let mut snapshots = Vec::with_capacity(value.len());
+
+    for snapshot_value in value.iter() {
+        let snapshot = snapshot::from_json_value(snapshot_value)?;
+        snapshots.push(snapshot);
+    }
+
+    Ok(snapshots)
+}
+
 #[cfg(test)]
 mod tests {
     use crate::schema::NestedField;
@@ -114,7 +132,16 @@ mod tests {
             "properties": {
                 "property1": "value1",
                 "property2": "value2"
-            }
+            },
+                "snapshots": [
+                {
+                    "snapshot-id": 1,
+                    "timestamp-ms": 1723320520000,
+                    "manifests": [
+                        "s3://test-location/snap-1-manifest1.avro"
+                    ]
+                }
+            ]
         }"#;
 
         let result = from_json(json);

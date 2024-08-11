@@ -38,6 +38,19 @@ pub fn _get_bool(value: &Value, field: &str, path: Option<&str>) -> Result<bool,
     }
 }
 
+pub fn _get_string_array(
+    value: &Value,
+    field: &str,
+    path: Option<&str>,
+) -> Result<Vec<String>, ParserError> {
+    match value.get(field) {
+        Some(Value::Array(arr)) => Ok(arr.iter().map(|v| v.as_str().unwrap().to_owned()).collect()),
+        _ => Err(ParserError::MissingRequiredField(
+            path.unwrap_or(field).to_owned(),
+        )),
+    }
+}
+
 macro_rules! generate_getter_macro {
     ($name:ident, $func_name:ident) => {
         macro_rules! $name {
@@ -57,3 +70,4 @@ generate_getter_macro!(get_string, _get_string);
 generate_getter_macro!(get_u32, _get_u32);
 generate_getter_macro!(get_u64, _get_u64);
 generate_getter_macro!(get_bool, _get_bool);
+generate_getter_macro!(get_string_array, _get_string_array);

@@ -37,5 +37,14 @@
     "properties": {
         "property1": "value1",
         "property2": "value2"
-    }
+    },
+    "snapshots": [
+        {
+            "snapshot-id": 1,
+            "timestamp-ms": 1723320520000,
+            "manifests": [
+                "s3://test-location/snap-1-manifest1.avro"
+            ]
+        }
+    ]
 }
